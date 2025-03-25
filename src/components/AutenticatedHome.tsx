@@ -4,20 +4,25 @@ import { SiteMap } from '@/utils/siteMap';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Skeleton } from './ui/skeleton';
 import { PaginationState } from '@tanstack/react-table';
+import { useLocation } from 'react-router';
 
 function AutenticatedHome({ component }: { component: SiteMap }) {
 
-  const [pagination, setPagination] = React.useState<PaginationState>({
+  const [pagination, setPagination] = React.useState<PaginationState & { id_account?: string }>({
     pageIndex: 0,
     pageSize: 10,
+    id_account: undefined
   })
 
-  const fetchPage = (pagination: PaginationState): Promise<unknown> => {
-    return fetch(`${import.meta.env.VITE_BASE_URL}${component.path}?page=${pagination.pageIndex}&limit=${pagination.pageSize}&id_account=${pagination.id_account}`).then(res => res.json());
+  const location = useLocation();
+
+  const fetchPage = (pagination: PaginationState & { id_account?: string }): Promise<unknown> => {
+    const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${pagination.id_account ? `&id_account=${pagination.id_account}` : ''}`;
+    return fetch(`${import.meta.env.VITE_BASE_URL}${component.path}${queryParams}`).then(res => res.json());
   }
 
   const dataQuery = useQuery({
-    queryKey: ['data', pagination],
+    queryKey: [location.pathname, pagination],
     queryFn: () => fetchPage(pagination),
     placeholderData: keepPreviousData,
   })

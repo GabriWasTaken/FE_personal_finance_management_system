@@ -1,5 +1,6 @@
 import React from "react";
 import siteMap from "@/utils/siteMap";
+import { useNavigate } from "react-router";
 
 import {
   Sidebar,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/sidebar"
 
 export function AppSidebar() {
+  const navigate = useNavigate();
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -23,10 +25,10 @@ export function AppSidebar() {
               {siteMap.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
-                    <a href={item.path}>
+                    <button onClick={() => navigate(item.path, { state: {} })}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
