@@ -1,30 +1,39 @@
 import React from 'react'
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import TableServerSide from '../listComponents/TableServerSide';
-import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation } from '@tanstack/react-query';
+import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { useNavigate } from "react-router";
+import { addAccount } from '@/services/account';
 
-function Accounts( {dataQuery, pagination, setPagination}: {dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>>} ) {
+function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
     id: string,
     name: string,
   }
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
-      return fetch( import.meta.env.VITE_BASE_URL + '/accounts', { method: 'POST', body: JSON.stringify({ name: event.target[0].value }) })
+    mutationKey: ['/accounts'],
+    mutationFn: addAccount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/accounts'] });
     },
-    onSuccess: (result, variables, context) => {
-      dataQuery.refetch();
-    },
-    onError: (error, variables, context) => {
+    onError: () => {
       // Remove optimistic todo from the todos list
       //TODO insert error msg
     },
   })
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const formdata = new FormData(form);
+    const name = formdata.get('name') as string;
+    mutation.mutate(name);
+    form.reset();
+  }
 
   const columns = React.useMemo<ColumnDef<ColDef>[]>(
     () => [
@@ -44,8 +53,8 @@ function Accounts( {dataQuery, pagination, setPagination}: {dataQuery: QueryObse
   )
   return (
     <>
-      <form onSubmit={mutation.mutate}>
-        <input type='text' name='name'/>
+      <form onSubmit={handleSubmit}>
+        <input type='text' name='name' />
         <Button type='submit'></Button>
       </form>
       <TableServerSide columns={columns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />

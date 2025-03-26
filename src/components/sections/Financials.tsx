@@ -27,13 +27,12 @@ function Financials( {dataQuery, pagination, setPagination}: {dataQuery: QueryOb
   const mutation = useMutation({
     mutationFn: (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-      return fetch( import.meta.env.VITE_BASE_URL + '/accounts', { method: 'POST', body: JSON.stringify({ name: event.target[0].value }) })
+      return fetch( import.meta.env.VITE_BASE_URL + '/fiancials', { method: 'POST' })
     },
-    onSuccess: (result, variables, context) => {
+    onSuccess: () => {
       dataQuery.refetch();
     },
-    onError: (error, variables, context) => {
-      // Remove optimistic todo from the todos list
+    onError: () => {
       //TODO insert error msg
     },
   })
