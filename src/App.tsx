@@ -6,6 +6,8 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
 
 function App() {
   const config: LogtoConfig = {
@@ -19,6 +21,7 @@ function App() {
     <LogtoProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <AppRouter />
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </LogtoProvider>
   )
