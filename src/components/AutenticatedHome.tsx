@@ -5,6 +5,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Skeleton } from './ui/skeleton';
 import { PaginationState } from '@tanstack/react-table';
 import { useLocation } from 'react-router';
+import { handleApiError } from '@/utils/utils';
 
 function AutenticatedHome({ component }: { component: SiteMap }) {
 
@@ -18,7 +19,14 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
 
   const fetchPage = (pagination: PaginationState & { id_account?: string }): Promise<unknown> => {
     const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${pagination.id_account ? `&id_account=${pagination.id_account}` : ''}`;
-    return fetch(`${import.meta.env.VITE_BASE_URL}${component.path}${queryParams}`).then(res => res.json());
+    return fetch(`${import.meta.env.VITE_BASE_URL}${component.path}${queryParams}`, 
+      { 
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }, 
+      }).then(res => res.json()).catch(err => handleApiError(err));
   }
 
   const dataQuery = useQuery({

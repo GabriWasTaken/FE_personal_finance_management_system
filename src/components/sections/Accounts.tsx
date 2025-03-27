@@ -5,6 +5,7 @@ import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation
 import { Button } from '../ui/button';
 import { useNavigate } from "react-router";
 import { addAccount } from '@/services/account';
+import { handleApiError } from '@/utils/utils';
 
 function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
@@ -20,7 +21,8 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/accounts'] });
     },
-    onError: () => {
+    onError: (error) => {
+      handleApiError(error);
       // Remove optimistic todo from the todos list
       //TODO insert error msg
     },

@@ -4,6 +4,7 @@ import TableServerSide from '../listComponents/TableServerSide';
 import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { useLocation } from 'react-router';
+import { handleApiError } from '@/utils/utils';
 function Financials( {dataQuery, pagination, setPagination}: {dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>>} ) {
   type ColDef = {
     name: string,
@@ -27,13 +28,13 @@ function Financials( {dataQuery, pagination, setPagination}: {dataQuery: QueryOb
   const mutation = useMutation({
     mutationFn: (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-      return fetch( import.meta.env.VITE_BASE_URL + '/fiancials', { method: 'POST' })
+      return fetch( import.meta.env.VITE_BASE_URL + '/fiancials', { method: 'POST' }).catch(err => handleApiError(err));
     },
     onSuccess: () => {
       dataQuery.refetch();
     },
-    onError: () => {
-      //TODO insert error msg
+    onError: (error) => {
+      handleApiError(error);
     },
   })
 

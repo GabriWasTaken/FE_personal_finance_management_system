@@ -1,4 +1,4 @@
-import React, { JSX } from 'react';
+import React, { JSX, useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { LoginCallback } from './login/LoginCallback';
 import Home from './Home';
@@ -8,7 +8,17 @@ import siteMap from '@/utils/siteMap';
 import Loader from './ui/Loader';
 
 function AppRouter() {
-  const { isAuthenticated, isLoading } = useLogto();
+  const { isAuthenticated, isLoading, getIdToken } = useLogto();
+
+  useEffect(() => {
+    async function retrieveLogtoInfo() {
+      const token = await getIdToken();
+      if (token) localStorage.setItem("token", token);
+    }
+    if(isAuthenticated){
+      retrieveLogtoInfo();
+    }
+  }, [])
 
   if (isLoading) {
     return <Loader />;

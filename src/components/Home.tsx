@@ -9,8 +9,6 @@ function Home() {
   useEffect(() => {
     (async () => {
       if (isAuthenticated) {
-        const claims = await getIdTokenClaims();
-        console.log("claims", claims);
         navigate('/dashboard');
       } else {
         signIn(import.meta.env.VITE_LOGTO_URL_CALLBACK);
