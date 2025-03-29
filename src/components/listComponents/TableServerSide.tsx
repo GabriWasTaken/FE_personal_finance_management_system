@@ -170,10 +170,6 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
         </select>
         {dataQuery.isFetching ? 'Loading...' : null}
       </div>
-      <div>
-        {table.getRowModel().rows.length.toLocaleString()} {i18next.t('Common.of')}{' '}
-        {dataQuery.data?.rowCount.toLocaleString()} {i18next.t('Table.rows')}
-      </div>
     </div>
   )
 }
