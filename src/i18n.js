@@ -19,14 +19,34 @@ i18n
     resources: {
       en: {
         translation: {
-          "description": "Welcome to React and i18next",
-          "logout": "logout"
+          "logout": "logout",
+          "accounts": "Accounts",
+          "financials": "Financials",
+          "dashboard": "Dashboard",
+          Table: {
+            "page": "Page",
+            "go_to_page": "Go to page",
+            "rows": "Rows"
+          },
+          Common: {
+            "of": "of",
+          }
         }
       },
       it: {
         translation: {
-          "description": "Benvenuto su React e i18next",
-          "logout": "Esci"
+          "logout": "Esci",
+          "accounts": "Conti",
+          "financials": "Movimenti",
+          "dashboard": "Dashboard",
+          Table: {
+            "page": "Pagina",
+            "go_to_page": "Vai alla pagina",
+            "rows": "Righe"
+          },
+          Common: {
+            "of": "di",
+          }
         }
       }
     }

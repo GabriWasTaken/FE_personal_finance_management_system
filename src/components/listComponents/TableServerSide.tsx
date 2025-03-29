@@ -8,6 +8,7 @@ import {
   PaginationState,
 } from '@tanstack/react-table'
 import { QueryObserverSuccessResult, QueryObserverPlaceholderResult } from '@tanstack/react-query'
+import i18next from 'i18next'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -81,6 +82,9 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
             </tr>
           ))}
         </thead>
+        {table.getRowModel().rows.length === 0 
+          && <tbody><tr><td className='border p-2' colSpan={table.getAllLeafColumns().length}>No results.</td></tr></tbody>
+        }
         <tbody>
           {table.getRowModel().rows.map(row => {
             return (
@@ -132,14 +136,14 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
           {'>>'}
         </button>
         <span className="flex items-center gap-1">
-          <div>Page</div>
+          <div>{i18next.t('Table.page')}</div>
           <strong>
             {table.getState().pagination.pageIndex + 1} of{' '}
             {table.getPageCount().toLocaleString()}
           </strong>
         </span>
         <span className="flex items-center gap-1">
-          | Go to page:
+          | {i18next.t('Table.go_to_page')} :
           <input
             type="number"
             min="1"
@@ -160,15 +164,15 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
         >
           {[10, 20, 30, 40, 50].map(pageSize => (
             <option key={pageSize} value={pageSize}>
-              Show {pageSize}
+              {i18next.t('Table.rows')} {pageSize}
             </option>
           ))}
         </select>
         {dataQuery.isFetching ? 'Loading...' : null}
       </div>
       <div>
-        Showing {table.getRowModel().rows.length.toLocaleString()} of{' '}
-        {dataQuery.data?.rowCount.toLocaleString()} Rows
+        {table.getRowModel().rows.length.toLocaleString()} {i18next.t('Common.of')}{' '}
+        {dataQuery.data?.rowCount.toLocaleString()} {i18next.t('Table.rows')}
       </div>
     </div>
   )

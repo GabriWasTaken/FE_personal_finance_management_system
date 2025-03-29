@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "./ui/breadcrumb";
 import Topbar from "./ui/Topbar";
+import i18next from "i18next";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,7 +25,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{window.location.pathname.substring(1, window.location.pathname.length)}</BreadcrumbPage>
+                  <BreadcrumbPage>{i18next.t(window.location.pathname.substring(1, window.location.pathname.length))}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
