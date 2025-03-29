@@ -5,14 +5,16 @@ import { useLogto } from '@logto/react';
 
 export const LoginCallback = () => {
   const navigate = useNavigate();
-  const { getIdToken, getIdTokenClaims } = useLogto();
+  const { getIdToken, getIdTokenClaims, getAccessToken } = useLogto();
 
   const { isLoading } = useHandleSignInCallback(() => {
     
     const retrieveLogtoInfo = async () => {
+      const accessToken = await getAccessToken();
       const idToken = await getIdToken();
       const claims = await getIdTokenClaims();
-      if(idToken) localStorage.setItem("token", idToken);
+      if (idToken) localStorage.setItem("token", idToken);
+      if (accessToken) localStorage.setItem("accessToken", accessToken);
       if(claims?.username) localStorage.setItem("username", claims?.username);
     }
     retrieveLogtoInfo();

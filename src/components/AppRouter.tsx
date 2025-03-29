@@ -8,12 +8,14 @@ import siteMap from '@/utils/siteMap';
 import Loader from './ui/Loader';
 
 function AppRouter() {
-  const { isAuthenticated, isLoading, getIdToken } = useLogto();
+  const { isAuthenticated, isLoading, getIdToken, getAccessToken } = useLogto();
 
   useEffect(() => {
     async function retrieveLogtoInfo() {
+      const accessToken = await getAccessToken();
       const token = await getIdToken();
       if (token) localStorage.setItem("token", token);
+      if (accessToken) localStorage.setItem("accessToken", accessToken);
     }
     if(isAuthenticated){
       retrieveLogtoInfo();
