@@ -30,6 +30,7 @@ i18n
           },
           Common: {
             "of": "of",
+            "add": "Add",
           }
         }
       },
@@ -46,6 +47,7 @@ i18n
           },
           Common: {
             "of": "di",
+            "add": "Aggiungi",
           }
         }
       }

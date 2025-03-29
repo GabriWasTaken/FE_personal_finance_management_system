@@ -60,7 +60,7 @@ function Financials( {dataQuery, pagination, setPagination}: {dataQuery: QueryOb
     <>
       <form onSubmit={mutation.mutate}>
         <input type='text' name='name'/>
-        <Button type='submit'></Button>
+        <Button type='submit' variant='secondary'></Button>
       </form>
       <TableServerSide columns={columns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
     </>

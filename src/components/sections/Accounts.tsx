@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { useNavigate } from "react-router";
 import { addAccount } from '@/services/account';
 import { useErrorManager } from '@/hooks/useErrorManager';
+import i18next from 'i18next';
 
 function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
@@ -57,7 +58,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
     <>
       <form onSubmit={handleSubmit}>
         <input type='text' name='name' />
-        <Button type='submit'></Button>
+        <Button type='submit' variant='secondary'>{i18next.t('Common.add')}</Button>
       </form>
       <TableServerSide columns={columns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
     </>
