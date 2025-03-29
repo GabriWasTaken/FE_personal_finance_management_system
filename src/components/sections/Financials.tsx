@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import TableServerSide from '../listComponents/TableServerSide';
 import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { useLocation } from 'react-router';
-import { handleApiError } from '@/utils/utils';
+import { useErrorManager } from '@/hooks/useErrorManager';
 function Financials( {dataQuery, pagination, setPagination}: {dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>>} ) {
   type ColDef = {
     name: string,
@@ -16,25 +15,18 @@ function Financials( {dataQuery, pagination, setPagination}: {dataQuery: QueryOb
     subtag?: string
   }
 
-  const location = useLocation();
-  const locationState = (location.state);
-
-  useEffect(() => {
-    if (locationState) {
-      setPagination((old) => ({ ...old, id_account: locationState.id_account }));
-    }
-  }, [locationState]);
+  const handleError = useErrorManager();
 
   const mutation = useMutation({
     mutationFn: (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-      return fetch( import.meta.env.VITE_BASE_URL + '/fiancials', { method: 'POST' }).catch(err => handleApiError(err));
+      return fetch( import.meta.env.VITE_BASE_URL + '/fiancials', { method: 'POST' }).catch(err => handleError(err));
     },
     onSuccess: () => {
       dataQuery.refetch();
     },
     onError: (error) => {
-      handleApiError(error);
+      handleError(error);
     },
   })
 

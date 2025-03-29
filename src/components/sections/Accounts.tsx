@@ -5,7 +5,7 @@ import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation
 import { Button } from '../ui/button';
 import { useNavigate } from "react-router";
 import { addAccount } from '@/services/account';
-import { handleApiError } from '@/utils/utils';
+import { useErrorManager } from '@/hooks/useErrorManager';
 
 function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
@@ -14,6 +14,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
   }
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const handleError = useErrorManager();
 
   const mutation = useMutation({
     mutationKey: ['/accounts'],
@@ -21,8 +22,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/accounts'] });
     },
-    onError: (error) => {
-      handleApiError(error);
+    onError: () => {
       // Remove optimistic todo from the todos list
       //TODO insert error msg
     },
@@ -33,7 +33,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
     const form = event.target as HTMLFormElement;
     const formdata = new FormData(form);
     const name = formdata.get('name') as string;
-    mutation.mutate(name);
+    mutation.mutate({name, handleError});
     form.reset();
   }
 
