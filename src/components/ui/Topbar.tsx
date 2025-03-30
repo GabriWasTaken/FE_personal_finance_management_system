@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useLogto } from '@logto/react';
 import { useTranslation } from 'react-i18next';
+import { ThemeToggle } from '@/utils/ThemeToggle';
 
 function Topbar() {
   const { signOut } = useLogto();
@@ -41,6 +42,7 @@ function Topbar() {
       </Select>
       <button onClick={logOut}>{t('logout')}</button>
       {username && <p>Ciao {username}</p>}
+      <ThemeToggle />
     </div>
   )
 }

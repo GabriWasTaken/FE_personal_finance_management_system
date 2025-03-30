@@ -90,6 +90,14 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+button.btn-no-padding {
+  padding: 0;
+}
+
+button.btn-rounded-full {
+  border-radius: 50%;
+}
+
 .resizer {
   position: absolute;
   top: 0;

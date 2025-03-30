@@ -21,7 +21,7 @@ export const ThemeToggle = () => {
 
   return <button
     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-    className="absolute z-99 bottom-2 left-2 p-2 rounded-full bg-gray-200 dark:bg-gray-800 transition duration-300"
+    className="btn-no-padding btn-rounded-full bg-gray-200 dark:bg-gray-800 transition duration-300"
   >
     {theme === "dark" ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-gray-900" />}
   </button>
