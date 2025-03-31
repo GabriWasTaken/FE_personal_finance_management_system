@@ -49,7 +49,7 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
   }, [table.getState().columnSizingInfo, table.getState().columnSizing])
 
   return (
-    <div className="p-2">
+    <div>
       <div className="h-2" />
       <div
           {...{

@@ -58,7 +58,7 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
     <Layout>
       {dataQuery.isPending 
         ? <div className='px-8'><Skeleton className="w-full h-[20px] rounded-full" /></div>
-        : <component.component dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
+        : <div className='px-4'><component.component dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} /></div>
       }
     </Layout>
   );
