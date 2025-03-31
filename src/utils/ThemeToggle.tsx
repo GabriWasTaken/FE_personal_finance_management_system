@@ -25,8 +25,4 @@ export const ThemeToggle = () => {
   >
     {theme === "dark" ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-gray-900" />}
   </button>
-
-
-
-
 }
