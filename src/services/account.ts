@@ -23,3 +23,17 @@ export const addFinancial = async ({ amount, name, id_account, handleError}: {na
   }
   return response.json();
 }
+
+
+export const addTag = async ({ tag, handleError}: {tag: string, handleError: ({error}: {error: {status: number}}) => void}) => {
+  const response = await fetch(import.meta.env.VITE_BASE_URL + '/tags', { 
+      method: 'POST',
+      body: JSON.stringify({ tag }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`} 
+    });
+  if (!response.ok) {
+    handleError({ error: response });
+    throw new Error('Network response was not ok')
+  }
+  return response.json();
+}

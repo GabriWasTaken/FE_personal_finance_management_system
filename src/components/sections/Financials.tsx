@@ -14,23 +14,9 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from '../ui/input';
 import { Label } from "../ui/label"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from '@/lib/utils';
-import { ChevronsUpDown, Check } from 'lucide-react';
 import { useErrorManager } from '@/hooks/useErrorManager';
-import { addFinancial } from '@/services/account';
+import { addFinancial, addTag } from '@/services/account';
+import Combobox from '../ui/combobox';
 function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
     name: string,
@@ -42,6 +28,13 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     subtag?: string
   }
   type Accounts = {
+    rows: [{
+      id: string,
+      name: string
+    }]
+  }
+
+  type Tags = {
     rows: [{
       id: string,
       name: string
@@ -64,9 +57,22 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     },
   })
 
-  const fetchPage = async (pagination: PaginationState & { id_account?: string }): Promise<unknown> => {
+  const tagMutation = useMutation({
+    mutationKey: ['/tags'],
+    mutationFn: addTag,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/tags'] });
+      setOpen2(false);
+    },
+    onError: () => {
+      // Remove optimistic todo from the todos list
+      //TODO insert error msg
+    },
+  })
+
+  const fetchPage = async (pagination: PaginationState, apiToCall: string): Promise<unknown> => {
     const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}`;
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/accounts${queryParams}`,
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/${apiToCall}${queryParams}`,
       {
         method: 'GET',
         headers: {
@@ -83,12 +89,19 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
 
   const dataQueryAccounts:UseQueryResult<Accounts, Error> = useQuery({
     queryKey: ["/accounts", pagination],
-    queryFn: () => fetchPage(pagination),
+    queryFn: () => fetchPage(pagination, "accounts"),
   })
-  console.log(dataQueryAccounts);
+
+  const dataQueryTags:UseQueryResult<Tags, Error> = useQuery({
+    queryKey: ["/tags", pagination],
+    queryFn: () => fetchPage(pagination, "tags"),
+  })
 
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("")
+
+  const [open2, setOpen2] = React.useState(false)
+  const [value2, setValue2] = React.useState("")
 
   const handleSubmitFinancial = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,9 +109,12 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     const formdata = new FormData(form);
     const name = formdata.get('name') as string;
     const amount = formdata.get('amount');
-    console.log(name, amount, value);
     mutation.mutate({ name, amount: Number(amount), id_account: Number(value), handleError});
     form.reset();
+  }
+
+  const insertTag = (tag: string) => {
+    tagMutation.mutate({ tag, handleError});
   }
 
   const columns = React.useMemo<ColumnDef<ColDef>[]>(
@@ -158,52 +174,18 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
               </div>
               {dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        name='account'
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between"
-                      >
-                        {value
-                          ? dataQueryAccounts.data.rows.find((account) => account.id === value)?.name
-                          : "Select account..."}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search account..." className="h-9" />
-                        <CommandList>
-                          <CommandEmpty>No account found.</CommandEmpty>
-                          <CommandGroup>
-                            {dataQueryAccounts.data.rows.map((account) => (
-                              <CommandItem
-                                key={account.id}
-                                value={account.id}
-                                onSelect={(currentValue) => {
-                                  setValue(currentValue === value ? "" : currentValue)
-                                  setOpen(false)
-                                }}
-                              >
-                                {account.name}
-                                <Check
-                                  className={cn(
-                                    "ml-auto",
-                                    value === account.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <Label htmlFor="account" className="text-right">
+                    Account
+                  </Label>
+                  <Combobox onOpenChange={setOpen} open={open} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={value} setValue={setValue} />
                 </div>
               )}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right"> 
+                    Category
+                  </Label>
+                  <Combobox insertCallback={insertTag} insertable onOpenChange={setOpen2} open={open2} options={dataQueryTags?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={value2} setValue={setValue2} />
+                </div>
             </div>
             <DialogFooter>
               <Button type='submit'>Add!!</Button>
