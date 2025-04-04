@@ -19,7 +19,7 @@ import { Button } from './button'
 function Combobox({open, onOpenChange, value, setValue, options, insertable, insertCallback }: {
   open: boolean,
   onOpenChange: (open: boolean) => void,
-  value: string,
+  value: string | undefined,
   setValue: (value: string) => void,
   options?: { value: string, label: string }[]
   insertable?: boolean
@@ -36,7 +36,7 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, ins
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value
+          {value && options
             ? options.find((option) => option.value === value)?.label
             : "Select..."}
           <ChevronsUpDown className="opacity-50" />
@@ -51,7 +51,7 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, ins
               : <CommandEmpty>No results found.</CommandEmpty>
             }
             <CommandGroup>
-              {options.map((option) => (
+              {options && options.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.value}

@@ -1,5 +1,5 @@
-import React from 'react'
-import { ColumnDef, PaginationState } from '@tanstack/react-table';
+import React, { useEffect } from 'react'
+import { PaginationState } from '@tanstack/react-table';
 import TableServerSide from '../listComponents/TableServerSide';
 import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { Button } from '../ui/button';
@@ -15,41 +15,31 @@ import {
 import { Input } from '../ui/input';
 import { Label } from "../ui/label"
 import { useErrorManager } from '@/hooks/useErrorManager';
-import { addFinancial, addTag } from '@/services/account';
+import { addFinancial, addCategory, fetchPage, fetchSubcategories, addSubcategory } from '@/services/account';
 import Combobox from '../ui/combobox';
+import useTableMap from '@/hooks/useTableMap';
+import { Accounts, Categories } from '@/types/types';
+
 function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
-  type ColDef = {
-    name: string,
-    account_name: string,
-    amount: number,
-    date: string,
-    description: string,
-    tag?: string,
-    subtag?: string
-  }
-  type Accounts = {
-    rows: [{
-      id: string,
-      name: string
-    }]
-  }
-
-  type Tags = {
-    rows: [{
-      id: string,
-      name: string
-    }]
-  }
-
   const handleError = useErrorManager();
   const queryClient = useQueryClient();
+  const { financialsColumns } = useTableMap();
+
+  const [accountOpen, setAccountOpen] = React.useState(false)
+  const [accountValue, setAccountValue] = React.useState<string>()
+
+  const [categoryOpen, setCategoryOpen] = React.useState(false)
+  const [categoryValue, setCategoryValue] = React.useState<string>()
+
+  const [subcategoryOpen, setSubcategoryOpen] = React.useState(false)
+  const [subcategoryValue, setSubcategoryValue] = React.useState<string>()
 
   const mutation = useMutation({
     mutationKey: ['/financials'],
     mutationFn: addFinancial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/financials'] });
-      setOpen(false);
+      setAccountOpen(false);
     },
     onError: () => {
       // Remove optimistic todo from the todos list
@@ -57,51 +47,56 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     },
   })
 
-  const tagMutation = useMutation({
-    mutationKey: ['/tags'],
-    mutationFn: addTag,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/tags'] });
-      setOpen2(false);
+  const categoryMutation = useMutation({
+    mutationKey: ['/categories'],
+    mutationFn: addCategory,
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['/categories'] });
+      setCategoryOpen(false);
+      setCategoryValue(res.rows[0].id);
     },
     onError: () => {
       // Remove optimistic todo from the todos list
       //TODO insert error msg
     },
-  })
+  });
 
-  const fetchPage = async (pagination: PaginationState, apiToCall: string): Promise<unknown> => {
-    const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}`;
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/${apiToCall}${queryParams}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-      });
-    if (!response.ok) {
-      handleError({ error: response });
-      throw new Error('Network response was not ok')
-    }
-    return response.json();
-  }
+  const subcategoryMutation = useMutation({
+    mutationKey: ['/subcategories'],
+    mutationFn: addSubcategory,
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['/subcategories'] });
+      setSubcategoryOpen(false);
+      setSubcategoryValue(res.rows[0].id);
+    },
+    onError: () => {
+      // Remove optimistic todo from the todos list
+      //TODO insert error msg
+    },
+  });
 
-  const dataQueryAccounts:UseQueryResult<Accounts, Error> = useQuery({
+  const dataQueryAccounts: UseQueryResult<Accounts, Error> = useQuery({
     queryKey: ["/accounts", pagination],
-    queryFn: () => fetchPage(pagination, "accounts"),
+    queryFn: () => fetchPage(pagination, "accounts", handleError),
   })
 
-  const dataQueryTags:UseQueryResult<Tags, Error> = useQuery({
-    queryKey: ["/tags", pagination],
-    queryFn: () => fetchPage(pagination, "tags"),
+  const dataQueryCategories: UseQueryResult<Categories, Error> = useQuery({
+    queryKey: ["/categories", pagination],
+    queryFn: () => fetchPage(pagination, "categories", handleError),
   })
 
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const dataQuerySubcategories: UseQueryResult<Categories, Error> = useQuery({
+    queryKey: ["/subcategories", { ...pagination, id_category: categoryValue }],
+    queryFn: () => {
+      if (categoryValue) {
+        return fetchSubcategories({ ...pagination, id_category: categoryValue }, "subcategories", handleError)
+      }
+    },
+  })
 
-  const [open2, setOpen2] = React.useState(false)
-  const [value2, setValue2] = React.useState("")
+  useEffect(() => {
+    setSubcategoryValue(undefined);
+  }, [categoryValue]);
 
   const handleSubmitFinancial = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -109,40 +104,14 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     const formdata = new FormData(form);
     const name = formdata.get('name') as string;
     const amount = formdata.get('amount');
-    mutation.mutate({ name, amount: Number(amount), id_account: Number(value), handleError});
+    mutation.mutate({ 
+      name, amount: Number(amount), id_account: Number(accountValue),
+      id_category: Number(categoryValue), id_subcategory: Number(subcategoryValue), 
+      handleError 
+    });
     form.reset();
   }
 
-  const insertTag = (tag: string) => {
-    tagMutation.mutate({ tag, handleError});
-  }
-
-  const columns = React.useMemo<ColumnDef<ColDef>[]>(
-    () => [
-      {
-        accessorKey: "name",
-        header: () => <div>name</div>,
-        cell: ({ row }) => {
-          return <div className="font-medium">{row.original.name}</div>
-        },
-      },
-      {
-        accessorKey: "account",
-        header: () => <div>account</div>,
-        cell: ({ row }) => {
-          return <div className="font-medium">{row.original.account_name}</div>
-        },
-      },
-      {
-        accessorKey: "amount",
-        header: () => <div>amount</div>,
-        cell: ({ row }) => {
-          return <div className="font-medium">{row.original.amount}</div>
-        },
-      },
-    ],
-    []
-  )
   return (
     <>
       <Dialog>
@@ -177,15 +146,23 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
                   <Label htmlFor="account" className="text-right">
                     Account
                   </Label>
-                  <Combobox onOpenChange={setOpen} open={open} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={value} setValue={setValue} />
+                  <Combobox onOpenChange={setAccountOpen} open={accountOpen} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={accountValue} setValue={setAccountValue} />
                 </div>
               )}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="categories" className="text-right">
+                  Category
+                </Label>
+                <Combobox insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable onOpenChange={setCategoryOpen} open={categoryOpen} options={dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
+              </div>
+              {categoryValue &&
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="category" className="text-right"> 
-                    Category
+                  <Label htmlFor="subcategory" className="text-right">
+                    Subcategory
                   </Label>
-                  <Combobox insertCallback={insertTag} insertable onOpenChange={setOpen2} open={open2} options={dataQueryTags?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={value2} setValue={setValue2} />
+                  <Combobox insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable onOpenChange={setSubcategoryOpen} open={subcategoryOpen} options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
                 </div>
+              }
             </div>
             <DialogFooter>
               <Button type='submit'>Add!!</Button>
@@ -193,7 +170,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           </form>
         </DialogContent>
       </Dialog>
-      <TableServerSide columns={columns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
+      <TableServerSide columns={financialsColumns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
     </>
   )
 }
