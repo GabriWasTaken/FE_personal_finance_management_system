@@ -18,5 +18,6 @@ export type AddFinancialsProps = {
   id_account: number,
   id_category: number,
   id_subcategory: number,
+  transactionDate: Date,
   handleError: ({ error }: { error: { status: number } }) => void 
 }

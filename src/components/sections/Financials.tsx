@@ -19,6 +19,7 @@ import { addFinancial, addCategory, fetchPage, fetchSubcategories, addSubcategor
 import Combobox from '../ui/combobox';
 import useTableMap from '@/hooks/useTableMap';
 import { Accounts, Categories } from '@/types/types';
+import { DatePicker } from '../ui/datepicker';
 
 function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   const handleError = useErrorManager();
@@ -33,6 +34,8 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
 
   const [subcategoryOpen, setSubcategoryOpen] = React.useState(false)
   const [subcategoryValue, setSubcategoryValue] = React.useState<string>()
+
+  const [transactionDate, setTransactionDate] = React.useState<Date>(new Date());
 
   const mutation = useMutation({
     mutationKey: ['/financials'],
@@ -98,16 +101,22 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     setSubcategoryValue(undefined);
   }, [categoryValue]);
 
+  const handleDateChange = (e: Date | undefined) => {
+    if (e) {
+      setTransactionDate(e);
+    }
+  }
+
   const handleSubmitFinancial = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formdata = new FormData(form);
     const name = formdata.get('name') as string;
     const amount = formdata.get('amount');
-    mutation.mutate({ 
+    mutation.mutate({
       name, amount: Number(amount), id_account: Number(accountValue),
-      id_category: Number(categoryValue), id_subcategory: Number(subcategoryValue), 
-      handleError 
+      id_category: Number(categoryValue), id_subcategory: Number(subcategoryValue),
+      transactionDate, handleError
     });
     form.reset();
   }
@@ -163,6 +172,12 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
                   <Combobox insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable onOpenChange={setSubcategoryOpen} open={subcategoryOpen} options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
                 </div>
               }
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="date" className="text-right">
+                  Date
+                </Label>
+                <DatePicker todayAsInitialValue onValueChange={handleDateChange}/>
+              </div>
             </div>
             <DialogFooter>
               <Button type='submit'>Add!!</Button>

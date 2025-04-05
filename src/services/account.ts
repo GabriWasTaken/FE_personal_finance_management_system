@@ -14,10 +14,10 @@ export const addAccount = async ({ name, handleError }: { name: string, handleEr
   return response.json();
 }
 
-export const addFinancial = async ({ amount, name, id_account, id_category, id_subcategory, handleError }: AddFinancialsProps) => {
+export const addFinancial = async ({ amount, name, id_account, id_category, id_subcategory, transactionDate, handleError }: AddFinancialsProps) => {
   const response = await fetch(import.meta.env.VITE_BASE_URL + '/financials', {
     method: 'POST',
-    body: JSON.stringify({ name, amount, id_account, id_category, id_subcategory }),
+    body: JSON.stringify({ name, amount, id_account, id_category, id_subcategory, transactionDate }),
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!response.ok) {
