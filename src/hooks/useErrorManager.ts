@@ -1,4 +1,6 @@
 import { useLogto } from "@logto/react";
+import { toast } from "sonner"
+
 export function useErrorManager() {
 
   const {getIdToken, getAccessToken} = useLogto();
@@ -16,6 +18,7 @@ export function useErrorManager() {
       }
       retrieveLogtoInfo();
     }
+    toast.error("error");
   }
 
   return handleError

@@ -20,6 +20,7 @@ import Combobox from '../ui/combobox';
 import useTableMap from '@/hooks/useTableMap';
 import { Accounts, Categories } from '@/types/types';
 import { DatePicker } from '../ui/datepicker';
+import { toast } from "sonner"
 
 function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   const handleError = useErrorManager();
@@ -42,11 +43,11 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     mutationFn: addFinancial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/financials'] });
-      setAccountOpen(false);
+      toast.success("Transaction added");
     },
     onError: () => {
+      toast.error("Error adding transaction");
       // Remove optimistic todo from the todos list
-      //TODO insert error msg
     },
   })
 
@@ -60,7 +61,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     },
     onError: () => {
       // Remove optimistic todo from the todos list
-      //TODO insert error msg
+      toast.error("Error adding category");
     },
   });
 
@@ -74,7 +75,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     },
     onError: () => {
       // Remove optimistic todo from the todos list
-      //TODO insert error msg
+      toast.error("Error adding subcategory");
     },
   });
 

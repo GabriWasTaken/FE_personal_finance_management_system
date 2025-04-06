@@ -7,6 +7,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Toaster } from "@/components/ui/sonner"
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   return (
     <LogtoProvider config={config}>
       <QueryClientProvider client={queryClient}>
+        <Toaster />
         <AppRouter />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

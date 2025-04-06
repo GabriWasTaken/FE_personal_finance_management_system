@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 import { addAccount } from '@/services/account';
 import { useErrorManager } from '@/hooks/useErrorManager';
 import i18next from 'i18next';
+import { toast } from "sonner"
 
 function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
@@ -22,10 +23,11 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
     mutationFn: addAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/accounts'] });
+      toast.error("account added");
     },
     onError: () => {
       // Remove optimistic todo from the todos list
-      //TODO insert error msg
+      toast.error("Error adding account");
     },
   })
 
