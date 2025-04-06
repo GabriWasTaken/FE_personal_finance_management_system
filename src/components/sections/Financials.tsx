@@ -125,9 +125,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Button variant='secondary'>Add</Button>
-          </div>
+          <Button variant='secondary'>Add</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
