@@ -15,6 +15,7 @@ type FinancialsColDef = {
   category_name?: string;
   subcategory_name?: string;
   transaction_date: string;
+  type: string;
 };
 
 export default function useTableMap() {
@@ -77,6 +78,13 @@ export default function useTableMap() {
         cell: ({ row }) => {
           const date = new Date(row.original.transaction_date);
           return <div className="font-medium">{date.toLocaleDateString()}</div>;
+        },
+      },
+      {
+        accessorKey: "type",
+        header: () => <div>Type</div>,
+        cell: ({ row }) => {
+          return <div className="font-medium">{row.original.type}</div>;
         },
       },
       {

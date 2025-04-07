@@ -16,7 +16,7 @@ import { ChevronsUpDown, Check } from 'lucide-react';
 import React from 'react'
 import { Button } from './button'
 
-function Combobox({open, onOpenChange, value, setValue, options, insertable, insertCallback }: {
+function Combobox({open, onOpenChange, value, setValue, options, insertable, insertCallback, disabled }: {
   open: boolean,
   onOpenChange: (open: boolean) => void,
   value: string | undefined,
@@ -24,12 +24,14 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, ins
   options?: { value: string, label: string }[]
   insertable?: boolean
   insertCallback?: (searchString: string) => void
+  disabled?: boolean
 }) {
   const [searchString, setSearchString] = React.useState('')
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button
+          disabled={disabled}
           name='account'
           variant="outline"
           role="combobox"
