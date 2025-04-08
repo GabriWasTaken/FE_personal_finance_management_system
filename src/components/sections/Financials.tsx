@@ -13,17 +13,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useErrorManager } from '@/hooks/useErrorManager';
-import { addFinancial, addCategory, fetchPage, fetchSubcategories, addSubcategory } from '@/services/account';
+import { addFinancial, addCategory, fetchPage, fetchSubcategories, addSubcategory, deleteTransaction } from '@/services/account';
 import useTableMap from '@/hooks/useTableMap';
 import { Accounts, Categories } from '@/types/types';
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { AddFinancialModalBody } from './partials/modalBody';
+import ConfirmDeleteModal from '../ui/confirmDeleteModal';
 
 function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   const handleError = useErrorManager();
   const queryClient = useQueryClient();
-  const { financialsColumns } = useTableMap();
 
   const [accountOpen, setAccountOpen] = React.useState(false)
   const [accountValue, setAccountValue] = React.useState<string>()
@@ -41,6 +41,11 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
 
   const [type, setType] = React.useState<string>('income');
 
+  const [idToDelete, setIdToDelete] = React.useState<number>();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+
+  const { financialsColumns } = useTableMap({setIdToDelete, setIsDeleteModalOpen});
+
   const mutation = useMutation({
     mutationKey: ['/financials'],
     mutationFn: addFinancial,
@@ -51,6 +56,18 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     onError: () => {
       toast.error("Error adding transaction");
       // Remove optimistic todo from the todos list
+    },
+  })
+
+  const mutationDeleteFinancial = useMutation({
+    mutationKey: ['/financialsDelete'],
+    mutationFn: deleteTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/financials'] });
+    },
+    onError: () => {
+      // Remove optimistic todo from the todos list
+      //TODO insert error msg
     },
   })
 
@@ -125,6 +142,14 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     form.reset();
   }
 
+  const handleDeleteFinancial = () => {
+    if (idToDelete) {
+      mutationDeleteFinancial.mutate({id: idToDelete, handleError})
+      setIdToDelete(undefined);
+      setIsDeleteModalOpen(false);
+    }
+  }
+
   return (
     <>
       <Dialog>
@@ -161,6 +186,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           </form>
         </DialogContent>
       </Dialog>
+      <ConfirmDeleteModal isOpen={isDeleteModalOpen} setIsOpen={setIsDeleteModalOpen} handleDelete={() => handleDeleteFinancial() }/>
       <TableServerSide columns={financialsColumns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
     </>
   )
