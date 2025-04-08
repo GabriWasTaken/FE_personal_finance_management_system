@@ -13,6 +13,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
   type ColDef = {
     id: string,
     name: string,
+    net_total: string
   }
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -51,6 +52,17 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
               id_account: row.original.id,
             }
           })}>{row.original.name}</div>
+        },
+      },
+      {
+        accessorKey: "name",
+        header: () => <div>Amount</div>,
+        cell: ({ row }) => {
+          return <div className="font-medium" onClick={() => navigate('/financials', {
+            state: {
+              id_account: row.original.id,
+            }
+          })}>{row.original.net_total}</div>
         },
       },
     ],
