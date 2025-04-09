@@ -18,8 +18,11 @@ import useTableMap from '@/hooks/useTableMap';
 import { Accounts, Categories } from '@/types/types';
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
-import { AddFinancialModalBody } from './partials/modalBody';
 import ConfirmDeleteModal from '../ui/confirmDeleteModal';
+import { Label } from '@radix-ui/react-label';
+import Combobox from '../ui/combobox';
+import { DatePicker } from '../ui/datepicker';
+import { Input } from '../ui/input';
 
 function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   const handleError = useErrorManager();
@@ -40,6 +43,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   const [transactionDate, setTransactionDate] = React.useState<Date>(new Date());
 
   const [type, setType] = React.useState<string>('income');
+  const [accountToOptions, setAccountToOptions] = React.useState([]);
 
   const [idToDelete, setIdToDelete] = React.useState<number>();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
@@ -122,6 +126,12 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     setSubcategoryValue(undefined);
   }, [categoryValue]);
 
+  useEffect(() => {
+    if(dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0) {
+      setAccountToOptions(dataQueryAccounts.data.rows.filter((account) => account.id !== accountValue).map((account) => ({ value: account.id, label: account.name })))
+    }
+  }, [accountValue]);
+
   const handleDateChange = (e: Date | undefined) => {
     if (e) {
       setTransactionDate(e);
@@ -150,6 +160,63 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     }
   }
 
+  const AddFinancialModalBody = () => {
+    return (
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-3 items-center gap-4">
+          <Label htmlFor="name" className="text-left">
+            Name
+          </Label>
+          <Input id="name" name='name' className="col-span-2" />
+        </div>
+        <div className="grid grid-cols-3 items-center gap-4">
+          <Label htmlFor="amount" className="text-left">
+            Amount
+          </Label>
+          <Input id="amount" name='amount' className="col-span-2" />
+        </div>
+        {dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label htmlFor="account" className="text-left">
+              Account {type === 'transfer' ? 'from' : ''}
+            </Label>
+            <Combobox onOpenChange={setAccountOpen} open={accountOpen} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={accountValue} setValue={setAccountValue} />
+          </div>
+        )}
+        {type === 'transfer' &&
+          dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
+            <div className="grid grid-cols-3 items-center gap-4">
+              <Label htmlFor="account" className="text-left">
+                Account {type === 'transfer' ? 'to' : ''}
+              </Label>
+              <Combobox disabled={!accountValue} onOpenChange={setAccountToOpen} open={accountToOpen} options={accountToOptions} value={accountToValue} setValue={setAccountToValue} />
+            </div>
+          )
+        }
+        <div className="grid grid-cols-3 items-center gap-4">
+          <Label htmlFor="categories" className="text-left">
+            Category
+          </Label>
+          <Combobox insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable onOpenChange={setCategoryOpen} open={categoryOpen} options={dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
+        </div>
+        {categoryValue &&
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label htmlFor="subcategory" className="text-left">
+              Subcategory
+            </Label>
+            <Combobox insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable onOpenChange={setSubcategoryOpen} open={subcategoryOpen} options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
+          </div>
+        }
+        <div className="grid grid-cols-3 items-center gap-4">
+          <Label htmlFor="date" className="text-left">
+            Date
+          </Label>
+          <DatePicker todayAsInitialValue onValueChange={handleDateChange}/>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Dialog>
@@ -171,13 +238,13 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
                 <TabsTrigger className='data-[state=active]:bg-blue-500' value="transfer">Trasferimento</TabsTrigger>
               </TabsList>
               <TabsContent value="income">
-                {AddFinancialModalBody({dataQueryAccounts, dataQueryCategories, dataQuerySubcategories, categoryMutation, subcategoryMutation, accountValue, categoryValue, accountOpen, categoryOpen, subcategoryOpen, setSubcategoryOpen, setAccountOpen, setCategoryOpen, handleError, handleDateChange, setAccountValue, setCategoryValue, subcategoryValue, setSubcategoryValue, type: "income", accountToValue, setAccountToValue, accountToOpen, setAccountToOpen })}
+                {AddFinancialModalBody()}
               </TabsContent>
               <TabsContent value="expense">
-                {AddFinancialModalBody({dataQueryAccounts, dataQueryCategories, dataQuerySubcategories, categoryMutation, subcategoryMutation, accountValue, categoryValue, accountOpen, categoryOpen, subcategoryOpen, setSubcategoryOpen, setAccountOpen, setCategoryOpen, handleError, handleDateChange, setAccountValue, setCategoryValue, subcategoryValue, setSubcategoryValue, type: "expense", accountToValue, setAccountToValue, accountToOpen, setAccountToOpen })}
+                {AddFinancialModalBody()}
               </TabsContent>
               <TabsContent value="transfer">
-                {AddFinancialModalBody({dataQueryAccounts, dataQueryCategories, dataQuerySubcategories, categoryMutation, subcategoryMutation, accountValue, categoryValue, accountOpen, categoryOpen, subcategoryOpen, setSubcategoryOpen, setAccountOpen, setCategoryOpen, handleError, handleDateChange, setAccountValue, setCategoryValue, subcategoryValue, setSubcategoryValue, type: "transfer", accountToValue, setAccountToValue, accountToOpen, setAccountToOpen })}
+                {AddFinancialModalBody()}
               </TabsContent>
             </Tabs>
             <DialogFooter>
