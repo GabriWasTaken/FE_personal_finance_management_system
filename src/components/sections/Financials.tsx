@@ -43,12 +43,12 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   const [transactionDate, setTransactionDate] = React.useState<Date>(new Date());
 
   const [type, setType] = React.useState<string>('income');
-  const [accountToOptions, setAccountToOptions] = React.useState([]);
+  const [accountToOptions, setAccountToOptions] = React.useState<{ value: string; label: string; }[] | undefined>([]);
 
   const [idToDelete, setIdToDelete] = React.useState<number>();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
 
-  const { financialsColumns } = useTableMap({setIdToDelete, setIsDeleteModalOpen});
+  const { financialsColumns } = useTableMap({ setIdToDelete, setIsDeleteModalOpen });
 
   const mutation = useMutation({
     mutationKey: ['/financials'],
@@ -127,7 +127,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   }, [categoryValue]);
 
   useEffect(() => {
-    if(dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0) {
+    if (dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0) {
       setAccountToOptions(dataQueryAccounts.data.rows.filter((account) => account.id !== accountValue).map((account) => ({ value: account.id, label: account.name })))
     }
   }, [accountValue]);
@@ -154,7 +154,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
 
   const handleDeleteFinancial = () => {
     if (idToDelete) {
-      mutationDeleteFinancial.mutate({id: idToDelete, handleError})
+      mutationDeleteFinancial.mutate({ id: idToDelete, handleError })
       setIdToDelete(undefined);
       setIsDeleteModalOpen(false);
     }
@@ -211,7 +211,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           <Label htmlFor="date" className="text-left">
             Date
           </Label>
-          <DatePicker todayAsInitialValue onValueChange={handleDateChange}/>
+          <DatePicker todayAsInitialValue onValueChange={handleDateChange} />
         </div>
       </div>
     );
@@ -237,15 +237,14 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
                 <TabsTrigger className='data-[state=active]:bg-blue-500' value="expense">Uscita</TabsTrigger>
                 <TabsTrigger className='data-[state=active]:bg-blue-500' value="transfer">Trasferimento</TabsTrigger>
               </TabsList>
-              <TabsContent value="income">
-                {AddFinancialModalBody()}
-              </TabsContent>
-              <TabsContent value="expense">
-                {AddFinancialModalBody()}
-              </TabsContent>
-              <TabsContent value="transfer">
-                {AddFinancialModalBody()}
-              </TabsContent>
+              {["income", "expense", "transfer"].map((type) => {
+                return (
+                  <TabsContent key={type} value={type}>
+                    {AddFinancialModalBody()}
+                  </TabsContent>
+                )
+              })
+              }
             </Tabs>
             <DialogFooter>
               <Button type='submit'>Add!!</Button>
@@ -253,7 +252,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           </form>
         </DialogContent>
       </Dialog>
-      <ConfirmDeleteModal isOpen={isDeleteModalOpen} setIsOpen={setIsDeleteModalOpen} handleDelete={() => handleDeleteFinancial() }/>
+      <ConfirmDeleteModal isOpen={isDeleteModalOpen} setIsOpen={setIsDeleteModalOpen} handleDelete={() => handleDeleteFinancial()} />
       <TableServerSide columns={financialsColumns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
     </>
   )
