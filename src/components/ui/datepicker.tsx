@@ -47,7 +47,7 @@ export function DatePicker({todayAsInitialValue, onValueChange} : {todayAsInitia
           mode="single"
           selected={date}
           onSelect={handleSelect}
-          initialFocus
+          //initialFocus
         />
       </PopoverContent>
     </Popover>
