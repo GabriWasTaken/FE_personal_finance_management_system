@@ -1,6 +1,7 @@
 import { QueryObserverSuccessResult, QueryObserverPlaceholderResult } from '@tanstack/react-query';
 import { PaginationState } from '@tanstack/react-table';
 import React from 'react';
+import { ExpensesPieChart } from './partials/ExpensesPieChart';
 
 type DashboardSuccessAPIReturn = {
   allTime: {
@@ -15,10 +16,14 @@ type DashboardSuccessAPIReturn = {
     total_income: number,
     total_expense: number
   }
+  expensesByCategory: {
+    category_name: string,
+    total_expense: number
+  }[]
 
 }
 
-function Dashboard({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<DashboardSuccessAPIReturn, Error> | QueryObserverPlaceholderResult<DashboardSuccessAPIReturn, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
+function Dashboard({ dataQuery }: { dataQuery: QueryObserverSuccessResult<DashboardSuccessAPIReturn, Error> | QueryObserverPlaceholderResult<DashboardSuccessAPIReturn, Error>, pagination?: PaginationState, setPagination?: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   if (!dataQuery.data.allTime || !dataQuery.data.YTD || !dataQuery.data.prevYear) return <div>Loading...</div>;
   return (
     <div>
@@ -33,6 +38,9 @@ function Dashboard({ dataQuery, pagination, setPagination }: { dataQuery: QueryO
           prev year expenses: {dataQuery.data.prevYear.total_expense}
         </div>
       }
+      <br />
+      <h1>Expenses analysis</h1>
+      <ExpensesPieChart data={dataQuery.data.expensesByCategory} />
     </div>
   )
 }
