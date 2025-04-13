@@ -1,5 +1,5 @@
 import { Home, Inbox, LucideProps } from "lucide-react";
-import Dashboard from "@/components/sections/Dashboard";
+import Dashboard from "@/components/sections/dashboard/Dashboard";
 import Accounts from "@/components/sections/Accounts";
 import Financials from "@/components/sections/Financials";
 import { JSX } from "react";
@@ -46,7 +46,7 @@ export type SiteMap = {
   /**
    * The React component of the page.
    */
-  component: ({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) => JSX.Element;
+  component: ({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination?: PaginationState, setPagination?: React.Dispatch<React.SetStateAction<PaginationState>> }) => JSX.Element;
 
   /**
    * The type of the page, which determines its purpose and behavior [list, detail, none].
