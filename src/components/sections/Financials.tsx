@@ -24,7 +24,7 @@ import Combobox from '../ui/combobox';
 import { DatePicker } from '../ui/datepicker';
 import { Input } from '../ui/input';
 
-function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
+function Financials({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState & { id_account?: string }, setPagination: React.Dispatch<React.SetStateAction<PaginationState & { id_account?: string }>> }) {
   const handleError = useErrorManager();
   const queryClient = useQueryClient();
 
@@ -219,6 +219,14 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
 
   return (
     <>
+      {dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
+        <div className="flex flex-col m-2">
+          <Label htmlFor="account" className="text-left">
+            Account {type === 'transfer' ? 'from' : ''}
+          </Label>
+          <Combobox deletable onOpenChange={setAccountOpen} open={accountOpen} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
+        </div>
+      )}
       <Dialog>
         <DialogTrigger asChild>
           <Button variant='secondary'>Add</Button>

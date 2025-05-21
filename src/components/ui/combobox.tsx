@@ -12,21 +12,30 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from '@/lib/utils';
-import { ChevronsUpDown, Check } from 'lucide-react';
+import { ChevronsUpDown, Check, XIcon } from 'lucide-react';
 import React from 'react'
 import { Button } from './button'
 
-function Combobox({open, onOpenChange, value, setValue, options, insertable, insertCallback, disabled }: {
+//TODO: place label on top
+
+function Combobox({open, onOpenChange, value, setValue, options, insertable, deletable, insertCallback, disabled }: {
   open: boolean,
   onOpenChange: (open: boolean) => void,
   value: string | undefined,
-  setValue: (value: string) => void,
+  setValue: (value: string | undefined) => void,
   options?: { value: string, label: string }[]
   insertable?: boolean
+  deletable?: boolean
   insertCallback?: (searchString: string) => void
   disabled?: boolean
 }) {
-  const [searchString, setSearchString] = React.useState('')
+  const [searchString, setSearchString] = React.useState('');
+
+  const handleClear = (event: React.MouseEvent) => {
+    event.stopPropagation(); // Evita che il click sulla X apra/chiuda il popover
+    setValue(undefined); // Setta il valore a undefined per cancellarlo
+  };
+
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
@@ -41,6 +50,21 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, ins
           {value && options
             ? options.find((option) => option.value === value)?.label
             : "Select..."}
+
+          {deletable && value && (
+            <div
+              className="flex items-center justify-center p-1 rounded-sm hover:bg-accent cursor-pointer"
+              onClick={handleClear}
+              aria-label="Clear selection"
+            >
+              <XIcon className="h-4 w-4 shrink-0 opacity-50" />
+            </div>
+          )}
+
+          {/* Separatore visivo se c'è la X, altrimenti no */}
+          {deletable && value && (
+            <div className="w-px h-6 bg-border mx-2"></div> // Linea verticale sottile
+          )}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -58,7 +82,7 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, ins
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
+                    setValue(currentValue === value ? undefined : currentValue)
                     onOpenChange(false)
                   }}
                 >
