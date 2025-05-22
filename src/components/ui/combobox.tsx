@@ -18,9 +18,7 @@ import { Button } from './button'
 
 //TODO: place label on top
 
-function Combobox({open, onOpenChange, value, setValue, options, insertable, deletable, insertCallback, disabled }: {
-  open: boolean,
-  onOpenChange: (open: boolean) => void,
+function Combobox({ value, setValue, options, insertable, deletable, insertCallback, disabled }: {
   value: string | undefined,
   setValue: (value: string | undefined) => void,
   options?: { value: string, label: string }[]
@@ -30,21 +28,26 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, del
   disabled?: boolean
 }) {
   const [searchString, setSearchString] = React.useState('');
+  const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
   const handleClear = (event: React.MouseEvent) => {
-    event.stopPropagation(); // Evita che il click sulla X apra/chiuda il popover
-    setValue(undefined); // Setta il valore a undefined per cancellarlo
+    event.stopPropagation();
+    setValue(undefined);
+  };
+
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
+    <Popover open={isOpen} onOpenChange={toggleOpen}>
       <PopoverTrigger asChild>
         <Button
           disabled={disabled}
           name='account'
           variant="outline"
           role="combobox"
-          aria-expanded={open}
+          aria-expanded={isOpen}
           className="w-[200px] justify-between"
         >
           {value && options
@@ -61,9 +64,8 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, del
             </div>
           )}
 
-          {/* Separatore visivo se c'è la X, altrimenti no */}
           {deletable && value && (
-            <div className="w-px h-6 bg-border mx-2"></div> // Linea verticale sottile
+            <div className="w-px h-6 bg-border mx-2"></div>
           )}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -73,7 +75,13 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, del
           <CommandInput placeholder="Search account..." className="h-9" />
           <CommandList>
             {insertable && insertCallback ? 
-              <CommandEmpty onClick={() => insertCallback(searchString)}>+ {searchString}</CommandEmpty>
+              <CommandEmpty 
+                onClick={() => {
+                  insertCallback(searchString);
+                  toggleOpen();
+                }}>
+                  + {searchString}
+                </CommandEmpty>
               : <CommandEmpty>No results found.</CommandEmpty>
             }
             <CommandGroup>
@@ -83,7 +91,7 @@ function Combobox({open, onOpenChange, value, setValue, options, insertable, del
                   value={option.value}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? undefined : currentValue)
-                    onOpenChange(false)
+                    toggleOpen()
                   }}
                 >
                   {option.label}

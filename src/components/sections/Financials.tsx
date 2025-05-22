@@ -28,16 +28,12 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   const handleError = useErrorManager();
   const queryClient = useQueryClient();
 
-  const [accountOpen, setAccountOpen] = React.useState(false)
   const [accountValue, setAccountValue] = React.useState<string>()
 
-  const [categoryOpen, setCategoryOpen] = React.useState(false)
   const [categoryValue, setCategoryValue] = React.useState<string>()
 
-  const [subcategoryOpen, setSubcategoryOpen] = React.useState(false)
   const [subcategoryValue, setSubcategoryValue] = React.useState<string>()
 
-  const [accountToOpen, setAccountToOpen] = React.useState(false)
   const [accountToValue, setAccountToValue] = React.useState<string>()
 
   const [transactionDate, setTransactionDate] = React.useState<Date>(new Date());
@@ -80,7 +76,6 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     mutationFn: addCategory,
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['/categories'] });
-      setCategoryOpen(false);
       setCategoryValue(res.rows[0].id);
     },
     onError: () => {
@@ -94,7 +89,6 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     mutationFn: addSubcategory,
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['/subcategories'] });
-      setSubcategoryOpen(false);
       setSubcategoryValue(res.rows[0].id);
     },
     onError: () => {
@@ -180,7 +174,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
             <Label htmlFor="account" className="text-left">
               Account {type === 'transfer' ? 'from' : ''}
             </Label>
-            <Combobox onOpenChange={setAccountOpen} open={accountOpen} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={accountValue} setValue={setAccountValue} />
+            <Combobox options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={accountValue} setValue={setAccountValue} />
           </div>
         )}
         {type === 'transfer' &&
@@ -189,7 +183,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
               <Label htmlFor="account" className="text-left">
                 Account {type === 'transfer' ? 'to' : ''}
               </Label>
-              <Combobox disabled={!accountValue} onOpenChange={setAccountToOpen} open={accountToOpen} options={accountToOptions} value={accountToValue} setValue={setAccountToValue} />
+              <Combobox disabled={!accountValue} options={accountToOptions} value={accountToValue} setValue={setAccountToValue} />
             </div>
           )
         }
@@ -197,14 +191,14 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           <Label htmlFor="categories" className="text-left">
             Category
           </Label>
-          <Combobox insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable onOpenChange={setCategoryOpen} open={categoryOpen} options={dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
+          <Combobox insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable options={dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
         </div>
         {categoryValue &&
           <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="subcategory" className="text-left">
               Subcategory
             </Label>
-            <Combobox insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable onOpenChange={setSubcategoryOpen} open={subcategoryOpen} options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
+            <Combobox insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
           </div>
         }
         <div className="grid grid-cols-3 items-center gap-4">
@@ -224,7 +218,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           <Label htmlFor="account" className="text-left">
             Account {type === 'transfer' ? 'from' : ''}
           </Label>
-          <Combobox deletable onOpenChange={setAccountOpen} open={accountOpen} options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
+          <Combobox deletable options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
         </div>
       )}
       <Dialog>
