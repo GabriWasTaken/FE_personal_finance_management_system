@@ -53,8 +53,8 @@ export const addSubcategory = async ({ subcategory, categoryId, handleError }: {
   return response.json();
 }
 
-export const fetchPage = async (pagination: PaginationState, apiToCall: string, handleError: ({ error }: { error: { status: number } }) => void): Promise<unknown> => {
-  const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}`;
+export const fetchPage = async (pagination: PaginationState & { search?: string }, apiToCall: string, handleError: ({ error }: { error: { status: number } }) => void): Promise<unknown> => {
+  const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${pagination.search ? `&search=${pagination.search}` : ''}`;
   const response = await fetch(`${import.meta.env.VITE_BASE_URL}/${apiToCall}${queryParams}`,
     {
       method: 'GET',
@@ -71,8 +71,8 @@ export const fetchPage = async (pagination: PaginationState, apiToCall: string, 
 }
 
 
-export const fetchSubcategories = async (pagination: PaginationState & { id_category: string }, apiToCall: string, handleError: ({ error }: { error: { status: number } }) => void): Promise<unknown> => {
-  const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}&id_category=${pagination.id_category}`;
+export const fetchSubcategories = async (pagination: PaginationState & { id_category: string, search?: string }, apiToCall: string, handleError: ({ error }: { error: { status: number } }) => void): Promise<unknown> => {
+  const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}&id_category=${pagination.id_category}${pagination.search ? `&search=${pagination.search}` : ''}`;
   const response = await fetch(`${import.meta.env.VITE_BASE_URL}/${apiToCall}${queryParams}`,
     {
       method: 'GET',

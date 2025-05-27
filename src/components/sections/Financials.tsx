@@ -39,10 +39,14 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   const [transactionDate, setTransactionDate] = React.useState<Date>(new Date());
 
   const [type, setType] = React.useState<string>('income');
-  const [accountToOptions, setAccountToOptions] = React.useState<{ value: string; label: string; }[] | undefined>([]);
 
   const [idToDelete, setIdToDelete] = React.useState<number>();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [categoriesPagination, setCategoriesPagination] = React.useState<PaginationState & { search?: string }>({ pageIndex: 0, pageSize: 10, search: '' });
+  const [subcategoriesPagination, setSubcategoriesPagination] = React.useState<PaginationState & { search?: string }>({ pageIndex: 0, pageSize: 10, search: '' });
+  const [accountPagination, setAccountPagination] = React.useState<PaginationState & { search?: string }>({ pageIndex: 0, pageSize: 10, search: '' });
+  const [accountPaginationModal, setAccountPaginationModal] = React.useState<PaginationState & { search?: string }>({ pageIndex: 0, pageSize: 10, search: '' });
+  const [accountPaginationToModal, setAccountPaginationToModal] = React.useState<PaginationState & { search?: string }>({ pageIndex: 0, pageSize: 10, search: '' });
 
   const { financialsColumns } = useTableMap({ setIdToDelete, setIsDeleteModalOpen });
 
@@ -98,20 +102,30 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   });
 
   const dataQueryAccounts: UseQueryResult<Accounts, Error> = useQuery({
-    queryKey: ["/accounts", pagination],
-    queryFn: () => fetchPage(pagination, "accounts", handleError),
-  })
+    queryKey: ["/accounts", accountPagination],
+    queryFn: () => fetchPage(accountPagination, "accounts", handleError),
+  });
+
+  const dataQueryAccountsModal: UseQueryResult<Accounts, Error> = useQuery({
+    queryKey: ["/accounts", accountPaginationModal],
+    queryFn: () => fetchPage(accountPaginationModal, "accounts", handleError),
+  });
+
+  const dataQueryAccountsToModal: UseQueryResult<Accounts, Error> = useQuery({
+    queryKey: ["/accounts", accountPaginationToModal],
+    queryFn: () => fetchPage(accountPaginationToModal, "accounts", handleError),
+  });
 
   const dataQueryCategories: UseQueryResult<Categories, Error> = useQuery({
-    queryKey: ["/categories", pagination],
-    queryFn: () => fetchPage(pagination, "categories", handleError),
+    queryKey: ["/categories", categoriesPagination],
+    queryFn: () => fetchPage(categoriesPagination, "categories", handleError),
   })
 
   const dataQuerySubcategories: UseQueryResult<Categories, Error> = useQuery({
-    queryKey: ["/subcategories", { ...pagination, id_category: categoryValue }],
+    queryKey: ["/subcategories", { ...subcategoriesPagination, id_category: categoryValue }],
     queryFn: () => {
       if (categoryValue) {
-        return fetchSubcategories({ ...pagination, id_category: categoryValue }, "subcategories", handleError)
+        return fetchSubcategories({ ...subcategoriesPagination, id_category: categoryValue }, "subcategories", handleError)
       }
     },
   })
@@ -119,12 +133,6 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
   useEffect(() => {
     setSubcategoryValue(undefined);
   }, [categoryValue]);
-
-  useEffect(() => {
-    if (dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0) {
-      setAccountToOptions(dataQueryAccounts.data.rows.filter((account) => account.id !== accountValue).map((account) => ({ value: account.id, label: account.name })))
-    }
-  }, [accountValue]);
 
   const handleDateChange = (e: Date | undefined) => {
     if (e) {
@@ -138,8 +146,15 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     const formdata = new FormData(form);
     const name = formdata.get('name') as string;
     const amount = formdata.get('amount');
+
+    let cleanedString = amount as string;
+    if(amount && amount.toString().includes(',')) {      
+      cleanedString = amount.toString().replace(',', '.');
+    }
+    const amountNumber = parseFloat(cleanedString);
+
     mutation.mutate({
-      name, amount: Number(amount), id_account: Number(accountValue),
+      name, amount: amountNumber, id_account: Number(accountValue),
       id_category: Number(categoryValue), id_subcategory: Number(subcategoryValue),
       transactionDate, type, id_account_to: Number(accountToValue), handleError
     });
@@ -169,36 +184,32 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
           </Label>
           <Input id="amount" name='amount' className="col-span-2" />
         </div>
-        {dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
+        <div className="grid grid-cols-3 items-center gap-4">
+          <Label htmlFor="account" className="text-left">
+            Account {type === 'transfer' ? 'from' : ''}
+          </Label>
+          <Combobox key="account-from" pagination={accountPagination} searchCallback={setAccountPaginationModal} options={dataQueryAccountsModal?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={accountValue} setValue={setAccountValue} />
+        </div>
+        {type === 'transfer' &&
           <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="account" className="text-left">
-              Account {type === 'transfer' ? 'from' : ''}
+              Account {type === 'transfer' ? 'to' : ''}
             </Label>
-            <Combobox options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={accountValue} setValue={setAccountValue} />
+            <Combobox key="account-to" pagination={accountPagination} searchCallback={setAccountPaginationToModal} disabled={!accountValue} options={dataQueryAccountsToModal?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={accountToValue} setValue={setAccountToValue} />
           </div>
-        )}
-        {type === 'transfer' &&
-          dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="account" className="text-left">
-                Account {type === 'transfer' ? 'to' : ''}
-              </Label>
-              <Combobox disabled={!accountValue} options={accountToOptions} value={accountToValue} setValue={setAccountToValue} />
-            </div>
-          )
         }
         <div className="grid grid-cols-3 items-center gap-4">
           <Label htmlFor="categories" className="text-left">
             Category
           </Label>
-          <Combobox insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable options={dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
+          <Combobox key="categories" pagination={categoriesPagination} searchCallback={setCategoriesPagination} insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable options={dataQueryCategories && dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
         </div>
         {categoryValue &&
           <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="subcategory" className="text-left">
               Subcategory
             </Label>
-            <Combobox insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
+            <Combobox key="subcategories" pagination={subcategoriesPagination} searchCallback={setSubcategoriesPagination} insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
           </div>
         }
         <div className="grid grid-cols-3 items-center gap-4">
@@ -213,14 +224,12 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
 
   return (
     <>
-      {dataQueryAccounts.data && dataQueryAccounts.data.rows && dataQueryAccounts.data.rows.length > 0 && (
-        <div className="flex flex-col m-2">
-          <Label htmlFor="account" className="text-left">
-            Account {type === 'transfer' ? 'from' : ''}
-          </Label>
-          <Combobox deletable options={dataQueryAccounts.data.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
-        </div>
-      )}
+      <div className="flex flex-col m-2">
+        <Label htmlFor="account" className="text-left">
+          Account {type === 'transfer' ? 'from' : ''}
+        </Label>
+        <Combobox key="account" pagination={accountPagination} searchCallback={setAccountPagination} deletable options={dataQueryAccounts?.data?.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
+      </div>
       <Dialog>
         <DialogTrigger asChild>
           <Button variant='secondary'>Add</Button>
