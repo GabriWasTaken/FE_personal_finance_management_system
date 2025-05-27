@@ -86,7 +86,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
             state: {
               id_account: row.original.id,
             }
-          })}>{row.original.net_total}</div>
+          })}>{Number(row.original.net_total).toFixed(2)}</div>
         },
       },
       {
