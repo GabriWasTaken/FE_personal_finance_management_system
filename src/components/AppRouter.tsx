@@ -28,7 +28,18 @@ function AppRouter() {
 
   const renderSitemapRoutes: () => JSX.Element[] = () => {
     return siteMap.map(element => {
-      return (  
+      return (
+        element.subMenu ?
+        element.subMenu?.map(subElement => {
+        return (
+          <Route
+          key={subElement.title}
+          path={subElement.pageType === 'detail' ? `${subElement.path}/:id` : subElement.path}
+          element={isAuthenticated ? <AutenticatedHome component={subElement} /> : <Navigate to="/" />}
+        />
+        )
+      })
+      :
       <Route
         key={element.title}
         path={element.pageType === 'detail' ? `${element.path}/:id` : element.path}

@@ -72,6 +72,14 @@ h1 {
   line-height: 1.1;
 }
 
+.sidebarcollapsible {
+  padding: 0em 1.2em;
+}
+
+.sidebarcollapsible button {
+  padding:0px;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

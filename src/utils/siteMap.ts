@@ -5,6 +5,8 @@ import Financials from "@/components/sections/Financials";
 import { JSX } from "react";
 import { QueryObserverSuccessResult, QueryObserverPlaceholderResult } from "@tanstack/react-query";
 import { PaginationState } from "@tanstack/react-table";
+import Categories from "@/components/sections/Categories";
+import Subcategories from "@/components/sections/Subcategories";
 
 /**
  * Represents the type of page.
@@ -57,8 +59,31 @@ export type SiteMap = {
  * collapsable
  */
   collapsable: boolean;
+  subMenu?: SiteMap[]
 
 };
+
+const categories = {
+  index: 0,
+  title: 'categories',
+  path: '/categories',
+  icon: Inbox,
+  tooltip: 'Categories',
+  component: Categories,
+  pageType: 'list',
+  collapsable: false
+}
+
+const subcategories = {
+  index: 1,
+  title: 'subcategories',
+  path: '/subcategories',
+  icon: Inbox,
+  tooltip: 'Subcategories',
+  component: Subcategories,
+  pageType: 'list',
+  collapsable: false
+}
 
 const siteMap: SiteMap[] = [
   {
@@ -90,6 +115,16 @@ const siteMap: SiteMap[] = [
     component: Financials,
     pageType: 'list',
     collapsable: false,
+  },
+  {
+    index: 3,
+    title: 'configuration',
+    path: '/configuration',
+    icon: Inbox,
+    tooltip: 'Configuration',
+    pageType: 'list',
+    collapsable: true,
+    subMenu: [categories, subcategories]
   },
 ];
 

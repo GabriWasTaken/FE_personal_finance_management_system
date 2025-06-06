@@ -85,7 +85,33 @@ export default function useTableMap({setIdToDelete, setIsDeleteModalOpen}: {setI
     []
   );
 
-  return {financialsColumns};
+  const categoryColumns = React.useMemo<ColumnDef<FinancialsColDef>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: () => <div>name</div>,
+        cell: ({ row }) => {
+          return <div className="font-medium">{row.original.name}</div>;
+        },
+      },
+      {
+        accessorKey: "delete",
+        header: () => <div>Action</div>,
+        cell: ({ row }) => {
+          const handleDelete = () => {
+            if (setIdToDelete && setIsDeleteModalOpen) {
+              setIdToDelete(row.original.id);
+              setIsDeleteModalOpen(true);
+            }
+          }
+          return <div className="font-medium"><Trash2 className="h-6 w-6 hover:cursor-pointer" onClick={handleDelete} /></div>;
+        },
+      },
+    ],
+    []
+  );
+
+  return {financialsColumns, categoryColumns};
 }
 
 

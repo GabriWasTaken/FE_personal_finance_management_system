@@ -21,6 +21,7 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
   const [locationPath, setLocationPath] = React.useState<string>('/');
 
   useEffect(() => {
+    console.log("location", location);
     if (location.state) {
       setPagination((old) => ({ ...old, id_account: location.state.id_account }));
     }
