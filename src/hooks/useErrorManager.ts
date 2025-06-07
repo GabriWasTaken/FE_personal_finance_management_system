@@ -5,7 +5,7 @@ export function useErrorManager() {
 
   const {getIdToken, getAccessToken, signOut} = useLogto();
 
-  const handleError = ({ error }: { error: {status: number} }) => {
+  const handleError = async ({ error }: { error: {status: number} }) => {
     if (error.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('accessToken');
@@ -22,8 +22,10 @@ export function useErrorManager() {
         }
       }
       retrieveLogtoInfo();
+    } else {
+      const parsedError = await error.json();
+      toast.error(parsedError.message);
     }
-    toast.error("error");
   }
 
   return handleError

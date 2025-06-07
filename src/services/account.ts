@@ -123,3 +123,15 @@ export const deleteCategory = async ( { id, handleError }: { id: number, handleE
   }
   return response.json();
 }
+
+export const deleteSubcategory = async ( { id, handleError }: { id: number, handleError: ({ error }: { error: { status: number } }) => void } ) => {
+  const response = await fetch(import.meta.env.VITE_BASE_URL + '/subcategories?id=' + id, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!response.ok) {
+    handleError({ error: response });
+    throw new Error('Network response was not ok')
+  }
+  return response.json();
+}

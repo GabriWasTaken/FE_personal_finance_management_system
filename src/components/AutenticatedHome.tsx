@@ -12,10 +12,11 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
   const location = useLocation();
   const handleError = useErrorManager();
 
-  const [pagination, setPagination] = React.useState<PaginationState & { id_account?: string }>({
+  const [pagination, setPagination] = React.useState<PaginationState & { id_account?: string, id_category?: string }>({
     pageIndex: 0,
     pageSize: 10,
-    id_account: undefined
+    id_account: undefined,
+    id_category: undefined,
   })
 
   const [locationPath, setLocationPath] = React.useState<string>('/');
@@ -28,8 +29,8 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
     setLocationPath(location.pathname);
   }, [location]);
 
-  const fetchPage = async (pagination: PaginationState & { id_account?: string }): Promise<unknown> => {
-    const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${pagination.id_account ? `&id_account=${pagination.id_account}` : ''}`;
+  const fetchPage = async (pagination: PaginationState & { id_account?: string, id_category?: string }): Promise<unknown> => {
+    const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${pagination.id_account ? `&id_account=${pagination.id_account}` : ''}${pagination.id_category ? `&id_category=${pagination.id_category}` : ''}`;
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}${component.path}${queryParams}`,
       {
         method: 'GET',
