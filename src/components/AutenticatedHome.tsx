@@ -12,9 +12,11 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
   const location = useLocation();
   const handleError = useErrorManager();
 
-  const [pagination, setPagination] = React.useState<PaginationState & { id_account?: string, id_category?: string }>({
+  const [pagination, setPagination] = React.useState<PaginationState & { id_account?: string, id_category?: string, sortKey?: string, sortDirection?: string }>({
     pageIndex: 0,
     pageSize: 10,
+    sortKey: undefined,
+    sortDirection: undefined,
     id_account: undefined,
     id_category: undefined,
   })
@@ -29,8 +31,11 @@ function AutenticatedHome({ component }: { component: SiteMap }) {
     setLocationPath(location.pathname);
   }, [location]);
 
-  const fetchPage = async (pagination: PaginationState & { id_account?: string, id_category?: string }): Promise<unknown> => {
-    const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${pagination.id_account ? `&id_account=${pagination.id_account}` : ''}${pagination.id_category ? `&id_category=${pagination.id_category}` : ''}`;
+  const fetchPage = async (pagination: PaginationState & { id_account?: string, id_category?: string, sortKey?: string, sortDirection?: string }): Promise<unknown> => {
+    const idAccount = pagination.id_account ? `&id_account=${pagination.id_account}` : '';
+    const idCategory = pagination.id_category ? `&id_category=${pagination.id_category}` : ''
+    const sort = pagination.sortKey ? `&sort_key=${pagination.sortKey}&sort_direction=${pagination.sortDirection}` : '';
+    const queryParams = `?page=${pagination.pageIndex}&limit=${pagination.pageSize}${idAccount}${idCategory}${sort}`;
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}${component.path}${queryParams}`,
       {
         method: 'GET',

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import {
   useReactTable,
@@ -9,15 +9,17 @@ import {
 } from '@tanstack/react-table'
 import { QueryObserverSuccessResult, QueryObserverPlaceholderResult } from '@tanstack/react-query'
 import i18next from 'i18next'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   dataQuery:  QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>
-  pagination: PaginationState
-  setPagination: React.Dispatch<React.SetStateAction<PaginationState>>
+  pagination: PaginationState & { id_account?: string, id_category?: string, sortKey?: string, sortDirection?: string }
+  setPagination: React.Dispatch<React.SetStateAction<PaginationState & { id_account?: string, id_category?: string, sortKey?: string, sortDirection?: string }>>
+  defaultSort?: {id: string, direction: 'asc' | 'desc' }
 }
 
-function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPagination}: DataTableProps<TData, TValue> ) {
+function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPagination, defaultSort}: DataTableProps<TData, TValue> ) {
   const defaultData = React.useMemo(() => [], [])
 
   const table = useReactTable({
@@ -36,6 +38,7 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
     },
     columnResizeMode: 'onChange',
   });
+  const [sorting, setSorting] = useState<{id: string, direction: 'asc' | 'desc' }>(defaultSort || {id: '', direction: 'asc' });
 
   const columnSizeVars = React.useMemo(() => {
     const headers = table.getFlatHeaders()
@@ -69,10 +72,21 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
                   <th key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div className='relative border p-2' style={{ width: `calc(var(--header-${header?.id}-size) * 1px)`}}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        <div onClick={ () => {
+                          if (header.column.id === "delete") return;
+                          const prevSortingDirection = sorting?.id === header.column.id ? sorting.direction : 'asc'
+                          setPagination({ ...pagination, sortKey: header.column.id, sortDirection: prevSortingDirection === 'asc' ? 'desc' : 'asc'})
+                          const newSorting: {id: string, direction: 'asc' | 'desc' } = { id: header.column.id, direction: prevSortingDirection === 'asc' ? 'desc' : 'asc' };
+                          setSorting(newSorting);
+                        }}>
+                          <div className='flex justify-between'>
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            {header.column.id === sorting?.id ? sorting.direction === 'asc' ? <ChevronUp /> : <ChevronDown /> : ''}
+                          </div>
+                        </div>
                         <div className={`resizer ${header.column.getIsResizing() ? ' isResizing' : ''}`} onDoubleClick={header.column.resetSize} onMouseDown={header.getResizeHandler()}></div>
                       </div>
                     )}

@@ -26,7 +26,7 @@ export default function useTableMap({setIdToDelete, setIsDeleteModalOpen}: {setI
         },
       },
       {
-        accessorKey: "account",
+        accessorKey: "account_name",
         header: () => <div>account</div>,
         cell: ({ row }) => {
           return <div className="font-medium">{row.original.account_name}</div>;

@@ -59,7 +59,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
       <Button onClick={() => setIsFinancialModalOpen(true)}>Add</Button>
       <FinancialModal isOpen={isFinancialModalOpen} setIsOpen={setIsFinancialModalOpen} />
       <ConfirmDeleteModal isOpen={isDeleteModalOpen} setIsOpen={setIsDeleteModalOpen} handleDelete={() => handleDeleteFinancial()} />
-      <TableServerSide columns={financialsColumns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
+      <TableServerSide defaultSort={ {id: "transaction_date", direction: "desc"} } columns={financialsColumns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
     </>
   )
 }

@@ -79,7 +79,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
         },
       },
       {
-        accessorKey: "name",
+        accessorKey: "amount",
         header: () => <div>Amount</div>,
         cell: ({ row }) => {
           return <div className="font-medium" onClick={() => navigate('/financials', {
