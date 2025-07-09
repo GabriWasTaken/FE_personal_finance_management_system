@@ -123,6 +123,10 @@ const FinancialModal = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (is
     }
   }
 
+  const memoizedCategoryOptions = React.useMemo(() => {
+    return dataQueryCategories?.data?.rows?.map((category) => ({ value: category.id, label: category.name })) || [];
+  }, [dataQueryCategories?.data?.rows]); // Dipende solo dai dati effettivi
+
   const AddFinancialModalBody = () => {
     return (
       <div className="grid gap-4 py-4">
@@ -156,14 +160,14 @@ const FinancialModal = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (is
           <Label htmlFor="categories" className="text-left">
             Category
           </Label>
-          <Combobox key="categories" pagination={categoriesPagination} searchCallback={setCategoriesPagination} insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable options={dataQueryCategories && dataQueryCategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={categoryValue} setValue={setCategoryValue} />
+          <Combobox key="categories" pagination={categoriesPagination} searchCallback={setCategoriesPagination} insertCallback={(category) => categoryMutation.mutate({ category, handleError })} insertable options={[...memoizedCategoryOptions]} rowCount={dataQueryCategories?.data?.rowCount} value={categoryValue} setValue={setCategoryValue} />
         </div>
         {categoryValue &&
           <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="subcategory" className="text-left">
               Subcategory
             </Label>
-            <Combobox key="subcategories" pagination={subcategoriesPagination} searchCallback={setSubcategoriesPagination} insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} value={subcategoryValue} setValue={setSubcategoryValue} />
+            <Combobox key="subcategories" pagination={subcategoriesPagination} searchCallback={setSubcategoriesPagination} insertCallback={(subcategory) => subcategoryMutation.mutate({ subcategory, categoryId: categoryValue, handleError })} insertable options={dataQuerySubcategories?.data?.rows?.map((account) => ({ value: account.id, label: account.name }))} rowCount={dataQuerySubcategories?.data?.rowCount} value={subcategoryValue} setValue={setSubcategoryValue} />
           </div>
         }
         <div className="grid grid-cols-3 items-center gap-4">

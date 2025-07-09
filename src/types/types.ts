@@ -8,8 +8,9 @@ export type Accounts = {
 export type Categories = {
   rows: [{
     id: string,
-    name: string
-  }]
+    name: string,
+  }],
+  rowCount: number,
 }
 
 export type AddFinancialsProps = { 

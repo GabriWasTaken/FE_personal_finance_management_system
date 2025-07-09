@@ -19,7 +19,7 @@ import { PaginationState } from "@tanstack/react-table";
 
 //TODO: place label on top
 
-function Combobox({ value, setValue, options, insertable, deletable, insertCallback, disabled, searchCallback, pagination }: {
+function Combobox({ value, setValue, options, insertable, deletable, insertCallback, disabled, searchCallback, pagination, rowCount }: {
   value: string | undefined,
   setValue: (value: string | undefined) => void,
   options?: { value: string, label: string }[],
@@ -29,12 +29,15 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
   disabled?: boolean,
   searchCallback?: React.Dispatch<React.SetStateAction<PaginationState & { search?: string; }>>,
   pagination?: PaginationState & { search?: string }
+  rowCount?: number
 }) {
   const [searchString, setSearchString] = React.useState('');
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
   const [isApiLoading, setIsApiLoading] = React.useState<boolean>(false);
-  const searchTimeoutRef = React.useRef<NodeJS.Timeout>(null);
-  const searchTimeoutRef2 = React.useRef<NodeJS.Timeout>(null);
+  const [paginatedOptions, setPaginatedOptions] = React.useState<{ value: string, label: string }[] | undefined>(options? [...options] : []);
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const scrollPositionRef = React.useRef<number>(0);
+  const commandListRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (searchTimeoutRef.current) {
@@ -44,7 +47,8 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
 
     searchTimeoutRef.current = setTimeout(() => {
       if (searchCallback) {
-        searchCallback((prev) => ({ ...prev, search: searchString }));
+        setPaginatedOptions([]);
+        searchCallback((prev) => ({ ...prev, search: searchString, pageIndex: 0 }));
       }
     }, 500);
 
@@ -53,17 +57,31 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchString, searchCallback, pagination]);
+  }, [searchString, searchCallback]);
 
   React.useEffect(() => {
     setIsApiLoading(false);
+    if(options && paginatedOptions) {
+      const optionsSum = Array.from([...paginatedOptions, ...options]
+          .reduce((m, o) => m.set(o.value, o), new Map)
+          .values()
+      );
+    setPaginatedOptions(optionsSum);
+    }
+    // Restore scroll position after options are loaded and not in initial mount
+    if (commandListRef.current && scrollPositionRef.current > 0) {
+      commandListRef.current.scrollBy({
+        top: scrollPositionRef.current,
+        behavior: "instant",
+      });
+    }
   }, [options]);
 
   const handleClear = (event: React.MouseEvent) => {
     event.stopPropagation();
     setValue(undefined);
-    setSearchString(''); // Reset della stringa di ricerca anche in caso di clear
-    setIsApiLoading(false); // Reset dello stato di caricamento
+    setSearchString(''); // Reset search string on clear
+    setIsApiLoading(false); // Reset loading state
   };
 
   const toggleOpen = () => {
@@ -71,6 +89,7 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
     if (!isOpen) {
       setSearchString('');
       setIsApiLoading(false);
+      scrollPositionRef.current = 0; // Reset scroll position when closing
     }
   };
 
@@ -79,18 +98,12 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
   };
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    if(pagination?.pageIndex >= (Math.ceil(rowCount/pagination?.pageSize) -1)) return;
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    if (scrollTop + clientHeight >= scrollHeight) {
-      if (searchTimeoutRef2.current) {
-        clearTimeout(searchTimeoutRef2.current);
-      }
+    if (scrollHeight - scrollTop === clientHeight) {
       if (searchCallback) {
-        setIsApiLoading(true);
-        searchTimeoutRef2.current = setTimeout(() => {
-          if (searchCallback) {
-            searchCallback((prev) => ({ ...prev, pageSize: prev.pageSize + 10 }));
-          }
-        }, 500);
+        scrollPositionRef.current = scrollTop;
+        searchCallback((prev) => ({ ...prev, search: searchString, pageIndex: prev.pageIndex + 1 }));
       }
     }
   }
@@ -106,8 +119,8 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
           aria-expanded={isOpen}
           className="w-[200px] justify-between"
         >
-          {value && options
-            ? options.find((option) => option.value === value)?.label
+          {value && paginatedOptions
+            ? paginatedOptions.find((option) => option.value === value)?.label
             : "Select..."}
 
           {deletable && value && (
@@ -133,7 +146,7 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
             value={searchString}
             onValueChange={handleSearchStringChange}
           />
-          <CommandList onScroll={handleScroll} onScrollCapture={handleScroll}>
+          <CommandList ref={commandListRef} onScroll={handleScroll}> {/* Attach ref here */}
             {isApiLoading ? (
               <CommandItem
                 key="loading"
@@ -144,9 +157,9 @@ function Combobox({ value, setValue, options, insertable, deletable, insertCallb
                 <LoaderCircle className="mr-2 animate-spin" />
               </CommandItem>
             ) : (
-              options && options.length > 0 ? (
+              paginatedOptions && paginatedOptions.length > 0 ? (
                 <CommandGroup>
-                  {options.map((option) => (
+                  {paginatedOptions.map((option) => (
                     <CommandItem
                       key={option.value}
                       value={option.value}
