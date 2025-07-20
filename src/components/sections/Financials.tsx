@@ -3,7 +3,7 @@ import { PaginationState } from '@tanstack/react-table';
 import TableServerSide from '../listComponents/TableServerSide';
 import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useErrorManager } from '@/hooks/useErrorManager';
-import { fetchPage, deleteTransaction } from '@/services/account';
+import { fetchPage, deleteTransaction, getExport } from '@/services/account';
 import useTableMap from '@/hooks/useTableMap';
 import { Accounts } from '@/types/types';
 import ConfirmDeleteModal from '../ui/confirmDeleteModal';
@@ -48,6 +48,10 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     }
   }
 
+  const handleExport = () => {
+    getExport(handleError);
+  }
+
   return (
     <>
       <div className="flex flex-col m-2">
@@ -56,7 +60,10 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
         </Label>
         <Combobox key="account" pagination={accountPagination} searchCallback={setAccountPagination} deletable options={dataQueryAccounts?.data?.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
       </div>
-      <Button onClick={() => setIsFinancialModalOpen(true)}>Add</Button>
+      <div className='flex justify-self-end gap-4'>
+        <Button onClick={() => setIsFinancialModalOpen(true)}>Add</Button>
+        <Button onClick={() => handleExport()}>Export</Button>
+      </div>
       <FinancialModal isOpen={isFinancialModalOpen} setIsOpen={setIsFinancialModalOpen} />
       <ConfirmDeleteModal isOpen={isDeleteModalOpen} setIsOpen={setIsDeleteModalOpen} handleDelete={() => handleDeleteFinancial()} />
       <TableServerSide defaultSort={ {id: "transaction_date", direction: "desc"} } columns={financialsColumns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />

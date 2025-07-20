@@ -59,11 +59,10 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
             className: 'divTable',
             style: {
               ...columnSizeVars, //Define column sizes on the <table> element
-              width: table.getTotalSize(),
             },
           }}
         >
-      <table>
+      <table className='w-full'>
         <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
@@ -71,7 +70,7 @@ function TableServerSide<TData, TValue>( {columns, dataQuery, pagination, setPag
                 return (
                   <th key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
-                      <div className='relative border p-2' style={{ width: `calc(var(--header-${header?.id}-size) * 1px)`}}>
+                      <div className='relative border p-2' >
                         <div onClick={ () => {
                           if (header.column.id === "delete") return;
                           const prevSortingDirection = sorting?.id === header.column.id ? sorting.direction : 'asc'
