@@ -48,8 +48,15 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
     }
   }
 
-  const handleExport = () => {
-    getExport(handleError);
+  const handleExport = async () => {
+    const exportData = await getExport(handleError);
+    const url = window.URL.createObjectURL(new Blob([exportData], {type: "text/csv"}));
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', "export.csv")
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
   }
 
   return (
@@ -60,7 +67,7 @@ function Financials({ dataQuery, pagination, setPagination }: { dataQuery: Query
         </Label>
         <Combobox key="account" pagination={accountPagination} searchCallback={setAccountPagination} deletable options={dataQueryAccounts?.data?.rows.map((account) => ({ value: account.id, label: account.name }))} value={pagination.id_account} setValue={(value) => setPagination({ ...pagination, id_account: value })} />
       </div>
-      <div className='flex justify-self-end gap-4'>
+      <div className='flex justify-end gap-4'>
         <Button onClick={() => setIsFinancialModalOpen(true)}>Add</Button>
         <Button onClick={() => handleExport()}>Export</Button>
       </div>

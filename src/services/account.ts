@@ -136,7 +136,7 @@ export const deleteSubcategory = async ( { id, handleError }: { id: number, hand
   return response.json();
 }
 
-export const getExport = async (handleError: ({ error }: { error: { status: number } }) => void) : Promise<unknown> => {
+export const getExport = async (handleError: ({ error }: { error: { status: number } }) => void) : Promise<BlobPart> => {
   const response = await fetch(`${import.meta.env.VITE_BASE_URL}/export`,
     {
       method: 'GET',
@@ -149,5 +149,5 @@ export const getExport = async (handleError: ({ error }: { error: { status: numb
     handleError({ error: response });
     throw new Error('Network response was not ok')
   }
-  return response.json();
+  return response.text();
 }
