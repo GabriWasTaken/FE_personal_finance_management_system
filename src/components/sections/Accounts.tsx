@@ -4,12 +4,12 @@ import TableServerSide from '../listComponents/TableServerSide';
 import { QueryObserverPlaceholderResult, QueryObserverSuccessResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { useNavigate } from "react-router";
-import { addAccount, deleteAccount } from '@/services/account';
+import { deleteAccount } from '@/services/account';
 import { useErrorManager } from '@/hooks/useErrorManager';
 import i18next from 'i18next';
-import { toast } from "sonner"
 import { Trash2 } from 'lucide-react';
 import ConfirmDeleteModal from '../ui/confirmDeleteModal';
+import AddAccountModal from './partials/AddAccountModal';
 
 function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryObserverSuccessResult<unknown, Error> | QueryObserverPlaceholderResult<unknown, Error>, pagination: PaginationState, setPagination: React.Dispatch<React.SetStateAction<PaginationState>> }) {
   type ColDef = {
@@ -22,19 +22,7 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
   const handleError = useErrorManager();
   const [idToDelete, setIdToDelete] = React.useState<number>();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-
-  const mutation = useMutation({
-    mutationKey: ['/accounts'],
-    mutationFn: addAccount,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/accounts'] });
-      toast.error("account added");
-    },
-    onError: () => {
-      // Remove optimistic todo from the todos list
-      toast.error("Error adding account");
-    },
-  })
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
 
   const mutationDeleteFinancial = useMutation({
     mutationKey: ['/accountsDelete'],
@@ -47,15 +35,6 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
       //TODO insert error msg
     },
   })
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const formdata = new FormData(form);
-    const name = formdata.get('name') as string;
-    mutation.mutate({name, handleError});
-    form.reset();
-  }
 
   const handleDeleteFinancial = () => {
     if (idToDelete) {
@@ -108,10 +87,10 @@ function Accounts({ dataQuery, pagination, setPagination }: { dataQuery: QueryOb
   )
   return (
     <>
-      <form onSubmit={handleSubmit}>
-        <input type='text' name='name' />
-        <Button type='submit' variant='secondary'>{i18next.t('Common.add')}</Button>
-      </form>
+      <div className='flex justify-end gap-4'>
+        <Button variant='secondary' onClick={() => setIsAddModalOpen(true)}>{i18next.t('Common.add')}</Button>
+      </div>
+      <AddAccountModal isOpen={isAddModalOpen} setIsOpen={setIsAddModalOpen} />
       <TableServerSide columns={columns} dataQuery={dataQuery} pagination={pagination} setPagination={setPagination} />
       <ConfirmDeleteModal isOpen={isDeleteModalOpen} setIsOpen={setIsDeleteModalOpen} handleDelete={() => handleDeleteFinancial()} />
     </>
